@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Relatório Visual — CMS 4yousee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body{
+      font-family:'Poppins';
+      margin:0;background:linear-gradient(180deg,#f4f7f6,#e8f5e9);
+      color:#2B2B2B;
+    }
+
+    :root{
+      --green:#00C853;
+      --dark:#2B2B2B;
+      --gray:#6b7280;
+      --bg:#f4f7f6;
+      --white:#ffffff;
+      --radius:14px;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      gap:16px;padding:24px 32px;
+      background:var(--white);
+      box-shadow:0 4px 12px rgba(0,0,0,0.05)
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logo img{
+      height:44px;
+    }
+
+    h1{
+      font-size:20px;
+      margin:0;
+      color:var(--green);
+      font-weight:700;
+    }
+
+    .meta{
+      margin-left:auto;
+      text-align:right;
+      color:var(--gray);
+      font-size:13px;
+    }
+
+    .container{
+      max-width:1100px;
+      margin:24px auto;
+      padding:20px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 380px;
+      gap:18px;
+    }
+
+    .card{
+      background:var(--white);border-radius:var(--radius);
+      padding:18px;
+      box-shadow:0 6px 18px rgba(2,6,23,0.06);
+    }
+
+    .card h2{
+      margin:0 0 8px 0;
+      color:var(--green);
+      font-size:17px;display:flex;
+      align-items:center;
+      justify-content:space-between
+    }
+
+    .btn{
+      background:var(--green);color:white;
+      padding:8px 12px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+      transition:0.2s
+    }
+
+    .btn:hover{
+      opacity:0.9
+    }
+
+    .kpi{display:flex;
+      gap:12px;
+      margin-top:12px
+    }
+
+    .kpi .item{
+      flex:1;background:#f9fdf9;
+      padding:12px;
+      border-radius:10px;
+      text-align:center;
+      border:1px solid #e0f2e9
+    }
+    .kpi .item .num{
+      font-weight:700;
+      font-size:18px;
+      color:var(--green)
+    }
+
+    canvas{
+      max-width:100%
+    }
+
+    table{
+      width: 100%;
+      border-collapse:collapse;
+      font-size:13px
+    }
+
+    th,td{
+      padding:10px;
+      border-bottom:1px solid #eef2f7;
+      text-align:left
+    }
+
+    th{
+      color:var(--dark);
+      font-weight:600;
+    }
+
+    footer{
+      max-width:1100px;margin:18px auto;
+      text-align:center;
+      color:var(--gray);
+      font-size:13px;
+      padding-bottom:30px;
+    }
+
+    .chart-info{
+      text-align:center;
+      color:var(--gray);
+      font-size:13px;
+      margin-top:6px;
+    }
+
+    @media(max-width:980px){.grid{grid-template-columns:1fr}.meta{text-align:left;margin-left:0}}
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">
+      <img src="logo/principalLogo-4yousee.png" alt="4yousee logo"/>
+      <div>
+        <h1>Status de Players na Semana - <span style="color:#0000ff;">Bluefit</span></h1>
+        <div style="color:var(--gray);font-size:13px">Período: <strong>09/11/2025 — 14/11/2025</strong></div>
+      </div>
+    </div>
+    <div class="meta">
+      Data do Relatório<br/><strong>03/11/2025</strong>
+    </div>
+  </header>
+
+  <main class="container" id="relatorio">
+    <div class="grid">
+      <section class="card">
+        <h2>Resumo de Players <!--<button class="btn" id="btnPDF">Gerar PDF</button>--></h2>
+        <p style="color:var(--gray);margin:6px 0 0 0;">Status das telas conectadas e disponibilidade média no período.</p>
+
+        <div class="kpi">
+          <div class="item"><div style="font-size:12px;color:var(--gray)">Total de Players</div><div class="num" id="kpi-total">0</div></div>
+          <div class="item"><div style="font-size:12px;color:var(--gray)">Online</div><div class="num" id="kpi-online">0</div></div>
+          <div class="item"><div style="font-size:12px;color:var(--gray)">Offline</div><div class="num" id="kpi-offline">0</div></div>
+        </div>
+
+        <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <h3 style="font-size:13px;color:var(--gray)">Status (On / Off)</h3>
+            <canvas id="doughnutChart"></canvas>
+            <div class="chart-info" id="infoStatus"></div>
+          </div>
+          <div>
+            <h3 style="font-size:13px;color:var(--gray)">Disponibilidade (%)</h3>
+            <canvas id="barChart"></canvas>
+            <div class="chart-info" id="infoDisponibilidade"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2>Uploads Recentes</h2>
+        <table id="uploadsTable">
+          <thead><tr><th>Data</th><th>Conteúdo</th><th>Tipo</th><th>Publicado por</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </aside>
+    </div>
+
+    <section style="margin-top:18px" class="card">
+      <h2>Observações</h2>
+      <ul style="color:var(--gray);margin-top:8px">
+        <li>Players que estão offline é devido as academias que precisavam de ajustes</li>
+        <li style="margin-top:8px;">Unidades liberadas para ajustes: 
+          <ul><li>Hélio Pelegrino</li><li>Pinheiros</li><li>Maria Antonia</li><li>Vila Olimpia</li></ul>
+        </li>
+        <li>Unidade Perdizes no dia 14/11/2025, de acordo com representante, precisou retirar uma Tv devido a uma reunião de elemento com a regional.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 4yousee Digital Signage | Todos os direitos reservados.
+  </footer>
+
+  <script>
+    const players = [
+       { name: 'Player 01', status: 'offline', uptime: 0 },
+      { name: 'Player 02', status: 'online', uptime: 100 },
+      { name: 'Player 03', status: 'online', uptime: 100 },
+      {name: 'Player 04', status:'online',uptime: 100},
+      {name: 'Player 05', status:'online',uptime: 100},
+      {name: 'Player 06', status:'offline',uptime: 0},
+      {name: 'Player 07', status:'online',uptime: 100},
+      {name: 'Player 08', status:'online',uptime: 100},
+      {name: 'Player 09', status:'online',uptime: 100},
+      {name: 'Player 10', status:'online',uptime: 100},
+      {name: 'Player 11', status:'offline',uptime: 0},
+      {name: 'Player 12', status:'online',uptime:100},
+      {name: 'Player 13', status:'online',uptime:100},
+      {name: 'Player 14', status:'online',uptime:100},
+      {name: 'Player 15', status:'offline',uptime: 0},
+      {name: 'Player 16', status:'online',uptime:90},
+      {name: 'Player 17', status:'offline',uptime:80},
+      {name: 'Player 18', status:'offline',uptime:80},
+      {name: 'Player 19', status:'online',uptime:100},
+      {name: 'Player 20', status:'online',uptime: 100},
+      {name: 'Player 21', status:'online',uptime: 100},
+      {name: 'Player 22', status:'online',uptime:100},
+      {name: 'Player 23', status:'online',uptime:100},
+      {name: 'Player 24', status:'online',uptime:100},
+      {name: 'Player 25', status:'online',uptime:100},
+      {name: 'Player 26', status:'online',uptime:100},
+      {name: 'Player 27', status:'offline',uptime: 0},
+      {name: 'Player 28', status:'online',uptime:100},
+      {name: 'Player 29', status:'online',uptime:100},
+      {name: 'Player 30', status:'online',uptime:100},
+      {name: 'Player 31', status:'online',uptime:100},
+      {name: 'Player 32', status:'online',uptime:100},
+      {name: 'Player 33', status:'offline',uptime: 0},
+      {name: 'Player 34', status:'offline',uptime: 0},
+      {name: 'Player 35', status:'offline',uptime: 0},
+      {name: 'Player 36', status:'offline',uptime: 0},
+      {name: 'Player 37', status:'online',uptime:100},
+      {name: 'Player 38', status:'online',uptime:100},
+      {name: 'Player 39', status:'offline',uptime: 0},
+      {name: 'Player 40', status:'offline',uptime: 0},
+      {name: 'Player 41', status:'offline',uptime: 0},
+      {name: 'Player 42', status:'offline',uptime: 0},
+      {name: 'Player 43', status:'offline',uptime:80},
+      {name: 'Player 44', status:'online',uptime:100},
+      {name: 'Player 45', status:'online',uptime:100},
+      {name: 'Player 46', status:'online',uptime:100},
+      {name: 'Player 47', status:'online',uptime:100},
+      {name: 'Player 48', status:'online',uptime:100},
+      {name: 'Player 49', status:'online',uptime:100},
+      {name: 'Player 50', status:'online',uptime:100},
+      {name: 'Player 51', status:'online',uptime:100},
+      {name: 'Player 52', status:'offline',uptime:80},
+      {name: 'Player 53', status:'offline',uptime: 80},
+      {name: 'Player 54', status:'online',uptime:100},
+      {name: 'Player 55', status:'online',uptime:100},
+      {name: 'Player 56', status:'online',uptime:100},
+      {name: 'Player 57', status:'online',uptime:100},
+      {name: 'Player 58', status:'online',uptime:100},
+      {name: 'Player 59', status:'online',uptime:100},
+      {name: 'Player 60', status:'online',uptime:100},
+      {name: 'Player 61', status:'online',uptime:100},
+      {name: 'Player 62', status:'online',uptime:100},
+      {name: 'Player 63', status:'online',uptime:100},
+      {name: 'Player 64', status:'offline',uptime: 0},
+      {name: 'Player 65', status:'offline',uptime: 0},
+      {name: 'Player 66', status:'offline',uptime: 0}
+    ];
+
+    const uploads = [
+      { date: '14/11/2025', title: 'EletroDicas - Evite lesões', type: 'Vídeo', by: '4yousee' },
+      { date: '14/11/2025', title: 'EletroPop - 5 filmes anos 80', type: 'Vídeo', by: '4yousee' },
+      { date: '14/11/2025', title: 'EletroQuiz', type: 'Vídeo', by: '4yousee' },
+      { date: '14/11/2025', title: 'EletroTrip - Centro do Brasil', type: 'Vídeo', by: '4yousee' }
+      
+    ];
+
+    const total = players.length;
+    const online = players.filter(p=>p.status==='online').length;
+    const offline = total - online;
+    document.getElementById('kpi-total').innerText = total;
+    document.getElementById('kpi-online').innerText = online;
+    document.getElementById('kpi-offline').innerText = offline;
+
+    const tbody = document.querySelector('#uploadsTable tbody');
+    uploads.forEach(u=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${u.date}</td><td>${u.title}</td><td>${u.type}</td><td>${u.by}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    new Chart(document.getElementById('doughnutChart'),{
+      type:'doughnut',
+      data:{labels:['Online','Offline'],datasets:[{data:[online,offline],backgroundColor:['#00C853','#ef4444'],borderWidth:0}]},
+      options:{plugins:{legend:{position:'bottom'}},maintainAspectRatio:true}
+    });
+    document.getElementById('infoStatus').innerText=`Online: ${online} | Offline: ${offline}`;
+
+    const mediaUptime = players.reduce((acc,p)=>acc+p.uptime,0)/players.length;
+    new Chart(document.getElementById('barChart'),{
+      type:'bar',
+      data:{labels:['Disponibilidade Média'],datasets:[{label:'Uptime Médio (%)',data:[mediaUptime],backgroundColor:'#00C853',borderRadius:8}]},
+      options:{scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}},plugins:{legend:{display:false}},maintainAspectRatio:true}
+    });
+    document.getElementById('infoDisponibilidade').innerText=`Disponibilidade média: ${mediaUptime.toFixed(1)}%`;
+
+    document.getElementById('btnPDF').addEventListener('click',async()=>{
+      const { jsPDF } = window.jspdf;
+      const canvas = await html2canvas(document.querySelector('#relatorio'));
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p','mm','a4');
+      const width = pdf.internal.pageSize.getWidth();
+      const height = (canvas.height * width) / canvas.width;
+      pdf.addImage(imgData,'PNG',0,0,width,height);
+      pdf.save('relatorio-4yousee.pdf');
+    });
+  </script>
+</body>
+</html>
